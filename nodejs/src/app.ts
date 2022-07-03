@@ -1215,7 +1215,7 @@ async function postCondition(jiaIsuUUID: string, conds: any) {
         "INSERT INTO `isu_condition`" +
           "	(`jia_isu_uuid`, `timestamp`, `is_sitting`, `condition`, `message`)" +
           "	VALUES " +
-          conds.map((_) => "(?, ?, ?, ?, ?)").join(","),
+          conds.map((_: any) => "(?, ?, ?, ?, ?)").join(","),
           conds.map((cond: any) => [
             jiaIsuUUID,
             new Date(cond.timestamp * 1000),

@@ -126,9 +126,7 @@ if (!("POST_ISUCONDITION_TARGET_BASE_URL" in process.env)) {
 const postIsuConditionTargetBaseURL =
   process.env["POST_ISUCONDITION_TARGET_BASE_URL"];
 const dbinfo: mysql.PoolOptions = {
-  // host: process.env["MYSQL_HOST"] ?? "127.0.0.1",
-  // ハードコードしてみる
-  host: "172.31.38.181",
+  host: process.env["MYSQL_HOST"] ?? "127.0.0.1",
   port: parseInt(process.env["MYSQL_PORT"] ?? "3306", 10),
   user: process.env["MYSQL_USER"] ?? "isucon",
   database: process.env["MYSQL_DBNAME"] ?? "isucondition",
@@ -363,6 +361,7 @@ app.get("/api/isu", async (req, res) => {
       [jiaUserId]
     );
     const responseList: Array<GetIsuListResponse> = [];
+    // TODO N+1
     for (const isu of isuList) {
       let foundLastCondition = true;
       const [[lastCondition]] = await db.query<IsuCondition[]>(
@@ -1026,7 +1025,7 @@ app.get("/api/trend", async (req, res) => {
     >("SELECT `character` FROM `isu` GROUP BY `character`");
 
     const trendResponse: TrendResponse[] = [];
-
+    // TODO N+1
     for (const character of characterList) {
       const [isuList] = await db.query<Isu[]>(
         "SELECT * FROM `isu` WHERE `character` = ?",

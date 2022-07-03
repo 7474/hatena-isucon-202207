@@ -1164,14 +1164,14 @@ app.post(
 async function postCondition(jiaIsuUUID: string, conds: any) {
   const db = await pool.getConnection();
     try {
-      await db.beginTransaction();
+      // await db.beginTransaction();
 
       const [[{ cnt }]] = await db.query<(RowDataPacket & { cnt: number })[]>(
         "SELECT COUNT(*) AS `cnt` FROM `isu` WHERE `jia_isu_uuid` = ?",
         [jiaIsuUUID]
       );
       if (cnt === 0) {
-        await db.rollback();
+        // await db.rollback();
         throw "not found: isu";
       }
 
@@ -1198,10 +1198,10 @@ async function postCondition(jiaIsuUUID: string, conds: any) {
 
       await updateLatestCondition(db, jiaIsuUUID);
 
-      await db.commit();
+      // await db.commit();
     } catch (err) {
       console.error(`db error: ${err}`);
-      await db.rollback();
+      // await db.rollback();
     } finally {
       db.release();
     }

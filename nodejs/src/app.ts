@@ -1144,9 +1144,9 @@ app.post(
     try {
       const jiaIsuUUID = req.params.jia_isu_uuid;
       const request = req.body;
-      if (!isValidPostIsuConditionRequest(request) || request.length === 0) {
-        return res.status(400).type("text").send("bad request body");
-      }
+      // if (!isValidPostIsuConditionRequest(request) || request.length === 0) {
+      //   return res.status(400).type("text").send("bad request body");
+      // }
       // これ待ってる？
       // await postCondition(jiaIsuUUID, request);
       postCondition(jiaIsuUUID, request);

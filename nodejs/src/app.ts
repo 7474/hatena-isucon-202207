@@ -365,9 +365,9 @@ app.get("/api/isu", async (req, res) => {
       [jiaUserId]
     );
     const conditionMap = new Map();
-    condtionList.forEach((cond: { jia_isu_uuid: any; }) => {
+    condtionList.forEach((cond: { jia_isu_uuid: any }) => {
       conditionMap.set(cond.jia_isu_uuid, cond);
-    })
+    });
 
     console.log(condtionList);
     console.log(conditionMap);
@@ -1161,13 +1161,20 @@ app.post(
       await db.query(
         "INSERT INTO `isu_condition`" +
           "	(`jia_isu_uuid`, `timestamp`, `is_sitting`, `condition`, `message`)" +
-          "	VALUES " + request.map(_ => "(?, ?, ?, ?, ?)").join(','),
-          request.map(cond => [
-            jiaIsuUUID, new Date(cond.timestamp * 1000), cond.is_sitting, cond.condition, cond.message
-          ]).flat ()
+          "	VALUES " +
+          request.map((_) => "(?, ?, ?, ?, ?)").join(","),
+        request
+          .map((cond) => [
+            jiaIsuUUID,
+            new Date(cond.timestamp * 1000),
+            cond.is_sitting,
+            cond.condition,
+            cond.message,
+          ])
+          .flat()
       );
 
-      await updateLatestCondition(db, [jiaIsuUUID]);
+      await updateLatestCondition(db, jiaIsuUUID);
 
       await db.commit();
 
@@ -1182,19 +1189,13 @@ app.post(
   }
 );
 
-function uniq(array: string[]) {
-  return [...new Set(array)];
-}
-
-async function updateLatestCondition(db: any, jia_isu_uuids: string[]){
-  uniq(jia_isu_uuids).forEach(async id => {
-    await db.query(
-      "UPDATE `isu` SET last_condition_id = (" +
-        "	SELECT id FROM isu_condition WHERE `jia_isu_uuid` = ? ORDER BY `timestamp` DESC LIMIT 1" +
-        ")",
-        id
-    );
-  });
+async function updateLatestCondition(db: any, jia_isu_uuid: string) {
+  await db.query(
+    "UPDATE `isu` SET last_condition_id = (" +
+      "	SELECT id FROM isu_condition WHERE `jia_isu_uuid` = ? ORDER BY `timestamp` DESC LIMIT 1" +
+      ")",
+    jia_isu_uuid
+  );
 }
 
 // ISUのコンディションの文字列がcsv形式になっているか検証

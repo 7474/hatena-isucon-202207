@@ -360,14 +360,16 @@ app.get("/api/isu", async (req, res) => {
       "SELECT * FROM `isu` WHERE `jia_user_id` = ? ORDER BY `id` DESC",
       [jiaUserId]
     );
+    const [condtionList] = await db.query<IsuCondition[]>(
+      "SELECT * FROM `isu_condition` JOIN isu ON isu.last_condition_id = isu_condition.id WHERE isu.`jia_user_id` = ?",
+      [jiaUserId]
+    );
+    const conditionMap = new Map(condtionList.map(c => [c.jia_isu_uuid, c]));
+
     const responseList: Array<GetIsuListResponse> = [];
-    // TODO N+1
     for (const isu of isuList) {
       let foundLastCondition = true;
-      const [[lastCondition]] = await db.query<IsuCondition[]>(
-        "SELECT * FROM `isu_condition` WHERE `jia_isu_uuid` = ? ORDER BY `timestamp` DESC LIMIT 1",
-        [isu.jia_isu_uuid]
-      );
+      const lastCondition: any = conditionMap.get(isu.jia_isu_uuid);
       if (!lastCondition) {
         foundLastCondition = false;
       }
@@ -1159,6 +1161,8 @@ app.post(
           ]).flat ()
       );
 
+      await updateLatestCondition(db, [jiaIsuUUID]);
+
       await db.commit();
 
       return res.status(202).send();
@@ -1171,6 +1175,21 @@ app.post(
     }
   }
 );
+
+function uniq(array: string[]) {
+  return [...new Set(array)];
+}
+
+async function updateLatestCondition(db: any, jia_isu_uuids: string[]){
+  uniq(jia_isu_uuids).forEach(async id => {
+    await db.query(
+      "UPDATE `isu` SET last_condition_id = (" +
+        "	SELECT id FROM isu_condition WHERE `jia_isu_uuid` = ? ORDER BY `timestamp` DESC LIMIT 1" +
+        ")",
+        id
+    );
+  });
+}
 
 // ISUのコンディションの文字列がcsv形式になっているか検証
 function isValidConditionFormat(condition: string): boolean {

@@ -707,8 +707,8 @@ async function generateIsuGraphResponse(
 
   const [rows] = await db.query<IsuCondition[]>(
     "SELECT * FROM `isu_condition` " +
-    "WHERE `jia_isu_uuid` = ? AND `timestamp` >= ? AND `timestamp` <= ? " + 
-    "ORDER BY `timestamp` ASC",
+      "WHERE `jia_isu_uuid` = ? AND `timestamp` >= ? AND `timestamp` <= ? " +
+      "ORDER BY `timestamp` ASC",
     [jiaIsuUUID, graphDate, endTime]
   );
   for (const condition of rows) {
@@ -1040,7 +1040,7 @@ app.get("/api/trend", async (req, res) => {
     >("SELECT `character` FROM `isu` GROUP BY `character`");
 
     const [condtionList] = await db.query<IsuCondition[]>(
-      "SELECT isu_condition.* FROM `isu_condition` JOIN isu ON isu.last_condition_id = isu_condition.id",
+      "SELECT isu_condition.* FROM `isu_condition` JOIN isu ON isu.last_condition_id = isu_condition.id"
     );
     const conditionMap = new Map(
       condtionList.map((cond: any) => [cond.jia_isu_uuid, cond])
@@ -1141,80 +1141,74 @@ app.post(
     >,
     res
   ) => {
-    const db = await pool.getConnection();
     try {
       const jiaIsuUUID = req.params.jia_isu_uuid;
-
       const request = req.body;
       if (!isValidPostIsuConditionRequest(request) || request.length === 0) {
         return res.status(400).type("text").send("bad request body");
       }
-      setTimeout(() => {
-        postCondition(jiaIsuUUID, request);
-      }, 1);
+      await postCondition(jiaIsuUUID, request);
 
       return res.status(202).send();
     } catch (err) {
       console.error(`db error: ${err}`);
-      await db.rollback();
       return res.status(500).send();
-    } finally {
-      db.release();
     }
   }
 );
 
 async function postCondition(jiaIsuUUID: string, conds: any) {
   const db = await pool.getConnection();
-    try {
-      // await db.beginTransaction();
+  try {
+    // await db.beginTransaction();
 
-      const [[{ cnt }]] = await db.query<(RowDataPacket & { cnt: number })[]>(
-        "SELECT COUNT(*) AS `cnt` FROM `isu` WHERE `jia_isu_uuid` = ?",
-        [jiaIsuUUID]
-      );
-      if (cnt === 0) {
-        // await db.rollback();
-        throw "not found: isu";
-      }
-
-      for (const cond of conds) {
-        if (!isValidConditionFormat(cond.condition)) {
-          throw "bad request body";
-        }
-      }
-
-      await db.query(
-        "INSERT INTO `isu_condition`" +
-          "	(`jia_isu_uuid`, `timestamp`, `is_sitting`, `condition`, `message`)" +
-          "	VALUES " +
-          conds.map((_: any) => "(?, ?, ?, ?, ?)").join(","),
-          conds.map((cond: any) => [
-            jiaIsuUUID,
-            new Date(cond.timestamp * 1000),
-            cond.is_sitting,
-            cond.condition,
-            cond.message,
-          ])
-          .flat()
-      );
-
-      await updateLatestCondition(db, jiaIsuUUID);
-
-      // await db.commit();
-    } catch (err) {
-      console.error(`db error: ${err}`);
+    const [[{ cnt }]] = await db.query<(RowDataPacket & { cnt: number })[]>(
+      "SELECT COUNT(*) AS `cnt` FROM `isu` WHERE `jia_isu_uuid` = ?",
+      [jiaIsuUUID]
+    );
+    if (cnt === 0) {
       // await db.rollback();
-    } finally {
-      db.release();
+      throw "not found: isu";
     }
+
+    for (const cond of conds) {
+      if (!isValidConditionFormat(cond.condition)) {
+        throw "bad request body";
+      }
+    }
+
+    await db.query(
+      "INSERT INTO `isu_condition`" +
+        "	(`jia_isu_uuid`, `timestamp`, `is_sitting`, `condition`, `message`)" +
+        "	VALUES " +
+        conds.map((_: any) => "(?, ?, ?, ?, ?)").join(","),
+      conds
+        .map((cond: any) => [
+          jiaIsuUUID,
+          new Date(cond.timestamp * 1000),
+          cond.is_sitting,
+          cond.condition,
+          cond.message,
+        ])
+        .flat()
+    );
+
+    await updateLatestCondition(db, jiaIsuUUID);
+
+    // await db.commit();
+  } catch (err) {
+    console.error(`db error: ${err}`);
+    // await db.rollback();
+  } finally {
+    db.release();
+  }
 }
 
 async function updateLatestCondition(db: any, jia_isu_uuid: string) {
   await db.query(
     "UPDATE `isu` SET last_condition_id = (" +
       "	SELECT id FROM isu_condition WHERE `jia_isu_uuid` = isu.jia_isu_uuid ORDER BY `timestamp` DESC LIMIT 1" +
-      ")" + 
+      ")" +
       " WHERE isu.`jia_isu_uuid` = ?",
     [jia_isu_uuid]
   );
@@ -1265,16 +1259,15 @@ function isValidConditionFormat(condition: string): boolean {
   });
 });
 
-
-const clusterWorkerSize = os.cpus().length
+const clusterWorkerSize = os.cpus().length;
 if (cluster.isMaster) {
-  for (let i=0; i < clusterWorkerSize; i++) {
+  for (let i = 0; i < clusterWorkerSize; i++) {
     cluster.fork();
   }
 
-  cluster.on("exit", function(worker) {
+  cluster.on("exit", function (worker) {
     console.log("Worker", worker.id, " has exitted.");
-  })
+  });
 } else {
   app.listen(parseInt(process.env["SERVER_APP_PORT"] ?? "3000", 10));
   // app.listen(PORT, function () {

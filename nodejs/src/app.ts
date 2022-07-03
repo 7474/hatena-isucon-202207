@@ -126,7 +126,7 @@ if (!("POST_ISUCONDITION_TARGET_BASE_URL" in process.env)) {
 const postIsuConditionTargetBaseURL =
   process.env["POST_ISUCONDITION_TARGET_BASE_URL"];
 const dbinfo: mysql.PoolOptions = {
-  // host: process.env["MYSQL_HOST"] ?? "127.0.0.1",
+  host: process.env["MYSQL_HOST"] ?? "127.0.0.1",
   port: parseInt(process.env["MYSQL_PORT"] ?? "3306", 10),
   user: process.env["MYSQL_USER"] ?? "isucon",
   database: process.env["MYSQL_DBNAME"] ?? "isucondition",

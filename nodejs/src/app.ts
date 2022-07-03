@@ -1031,6 +1031,13 @@ app.get("/api/trend", async (req, res) => {
       (RowDataPacket & { character: string })[]
     >("SELECT `character` FROM `isu` GROUP BY `character`");
 
+    const [condtionList] = await db.query<IsuCondition[]>(
+      "SELECT isu_condition.* FROM `isu_condition` JOIN isu ON isu.last_condition_id = isu_condition.id",
+    );
+    const conditionMap = new Map(
+      condtionList.map((cond: any) => [cond.jia_isu_uuid, cond])
+    );
+
     const trendResponse: TrendResponse[] = [];
     // TODO N+1
     for (const character of characterList) {
@@ -1038,18 +1045,17 @@ app.get("/api/trend", async (req, res) => {
         "SELECT * FROM `isu` WHERE `character` = ?",
         [character.character]
       );
+  
+      const responseList: Array<GetIsuListResponse> = [];
+      for (const isu of isuList) {
 
       const characterInfoIsuConditions = [];
       const characterWarningIsuConditions = [];
       const characterCriticalIsuConditions = [];
       for (const isu of isuList) {
-        const [conditions] = await db.query<IsuCondition[]>(
-          "SELECT * FROM `isu_condition` WHERE `jia_isu_uuid` = ? ORDER BY timestamp DESC",
-          [isu.jia_isu_uuid]
-        );
+        const isuLastCondition: any = conditionMap.get(isu.jia_isu_uuid);
 
-        if (conditions.length > 0) {
-          const isuLastCondition = conditions[0];
+        if (isuLastCondition) {
           const [conditionLevel, err] = calculateConditionLevel(
             isuLastCondition.condition
           );

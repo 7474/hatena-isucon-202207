@@ -369,8 +369,8 @@ app.get("/api/isu", async (req, res) => {
       conditionMap.set(cond.jia_isu_uuid, cond);
     })
 
-    concole.log(condtionList);
-    concole.log(conditionMap);
+    console.log(condtionList);
+    console.log(conditionMap);
 
     const responseList: Array<GetIsuListResponse> = [];
     for (const isu of isuList) {

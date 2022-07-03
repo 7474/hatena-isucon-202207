@@ -1123,13 +1123,6 @@ app.post(
     >,
     res
   ) => {
-    // TODO: 一定割合リクエストを落としてしのぐようにしたが、本来は全量さばけるようにすべき
-    const dropProbability = 0.9;
-    if (Math.random() <= dropProbability) {
-      console.warn("drop post isu condition request");
-      return res.status(202).send();
-    }
-
     const db = await pool.getConnection();
     try {
       const jiaIsuUUID = req.params.jia_isu_uuid;
@@ -1151,20 +1144,20 @@ app.post(
       }
 
       for (const cond of request) {
-        const timestamp = new Date(cond.timestamp * 1000);
-
         if (!isValidConditionFormat(cond.condition)) {
           await db.rollback();
           return res.status(400).type("text").send("bad request body");
         }
-
-        await db.query(
-          "INSERT INTO `isu_condition`" +
-            "	(`jia_isu_uuid`, `timestamp`, `is_sitting`, `condition`, `message`)" +
-            "	VALUES (?, ?, ?, ?, ?)",
-          [jiaIsuUUID, timestamp, cond.is_sitting, cond.condition, cond.message]
-        );
       }
+
+      await db.query(
+        "INSERT INTO `isu_condition`" +
+          "	(`jia_isu_uuid`, `timestamp`, `is_sitting`, `condition`, `message`)" +
+          "	VALUES " + request.map(_ => "(?, ?, ?, ?, ?)").join(','),
+          request.map(cond => [
+            jiaIsuUUID, new Date(cond.timestamp * 1000), cond.is_sitting, cond.condition, cond.message
+          ]).flat ()
+      );
 
       await db.commit();
 

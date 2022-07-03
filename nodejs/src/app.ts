@@ -1042,7 +1042,7 @@ app.get("/api/trend", async (req, res) => {
     // TODO N+1
     for (const character of characterList) {
       const [isuList] = await db.query<Isu[]>(
-        "SELECT * FROM `isu` WHERE `character` = ?",
+        "SELECT id, jia_isu_uuid, name, `character`, jia_user_id, created_at, updated_at  FROM `isu` WHERE `character` = ?",
         [character.character]
       );
 

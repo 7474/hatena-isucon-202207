@@ -1149,7 +1149,7 @@ app.post(
       }
       // これ待ってる？
       // await postCondition(jiaIsuUUID, request);
-      postCondition(jiaIsuUUID, request);
+      // postCondition(jiaIsuUUID, request);
 
       return res.status(202).send();
     } catch (err) {

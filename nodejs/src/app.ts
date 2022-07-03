@@ -1195,8 +1195,9 @@ async function updateLatestCondition(db: any, jia_isu_uuid: string) {
   await db.query(
     "UPDATE `isu` SET last_condition_id = (" +
       "	SELECT id FROM isu_condition WHERE `jia_isu_uuid` = ? ORDER BY `timestamp` DESC LIMIT 1" +
-      ")",
-    jia_isu_uuid
+      ")" + 
+      "`jia_isu_uuid` = ?",
+    [jia_isu_uuid, jia_isu_uuid]
   );
 }
 

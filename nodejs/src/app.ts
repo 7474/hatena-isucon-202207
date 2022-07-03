@@ -1045,9 +1045,6 @@ app.get("/api/trend", async (req, res) => {
         "SELECT * FROM `isu` WHERE `character` = ?",
         [character.character]
       );
-  
-      const responseList: Array<GetIsuListResponse> = [];
-      for (const isu of isuList) {
 
       const characterInfoIsuConditions = [];
       const characterWarningIsuConditions = [];

@@ -1147,7 +1147,9 @@ app.post(
       if (!isValidPostIsuConditionRequest(request) || request.length === 0) {
         return res.status(400).type("text").send("bad request body");
       }
-      await postCondition(jiaIsuUUID, request);
+      // これ待ってる？
+      // await postCondition(jiaIsuUUID, request);
+      postCondition(jiaIsuUUID, request);
 
       return res.status(202).send();
     } catch (err) {

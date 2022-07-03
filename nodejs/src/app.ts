@@ -1144,44 +1144,9 @@ app.post(
       if (!isValidPostIsuConditionRequest(request) || request.length === 0) {
         return res.status(400).type("text").send("bad request body");
       }
-      postCondition(jiaIsuUUID, request);
-      // await db.beginTransaction();
-
-      // const [[{ cnt }]] = await db.query<(RowDataPacket & { cnt: number })[]>(
-      //   "SELECT COUNT(*) AS `cnt` FROM `isu` WHERE `jia_isu_uuid` = ?",
-      //   [jiaIsuUUID]
-      // );
-      // if (cnt === 0) {
-      //   await db.rollback();
-      //   return res.status(404).type("text").send("not found: isu");
-      // }
-
-      // for (const cond of request) {
-      //   if (!isValidConditionFormat(cond.condition)) {
-      //     await db.rollback();
-      //     return res.status(400).type("text").send("bad request body");
-      //   }
-      // }
-
-      // await db.query(
-      //   "INSERT INTO `isu_condition`" +
-      //     "	(`jia_isu_uuid`, `timestamp`, `is_sitting`, `condition`, `message`)" +
-      //     "	VALUES " +
-      //     request.map((_) => "(?, ?, ?, ?, ?)").join(","),
-      //   request
-      //     .map((cond) => [
-      //       jiaIsuUUID,
-      //       new Date(cond.timestamp * 1000),
-      //       cond.is_sitting,
-      //       cond.condition,
-      //       cond.message,
-      //     ])
-      //     .flat()
-      // );
-
-      // await updateLatestCondition(db, jiaIsuUUID);
-
-      // await db.commit();
+      setTimeout(() => {
+        postCondition(jiaIsuUUID, request);
+      }, 1);
 
       return res.status(202).send();
     } catch (err) {

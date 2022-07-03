@@ -1216,7 +1216,7 @@ async function postCondition(jiaIsuUUID: string, conds: any) {
           "	(`jia_isu_uuid`, `timestamp`, `is_sitting`, `condition`, `message`)" +
           "	VALUES " +
           conds.map((_) => "(?, ?, ?, ?, ?)").join(","),
-          conds.map((cond) => [
+          conds.map((cond: any) => [
             jiaIsuUUID,
             new Date(cond.timestamp * 1000),
             cond.is_sitting,

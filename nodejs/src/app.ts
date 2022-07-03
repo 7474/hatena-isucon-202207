@@ -364,7 +364,10 @@ app.get("/api/isu", async (req, res) => {
       "SELECT isu_condition.* FROM `isu_condition` JOIN isu ON isu.last_condition_id = isu_condition.id WHERE isu.`jia_user_id` = ?",
       [jiaUserId]
     );
-    const conditionMap = new Map(condtionList.map(c => [c.jia_isu_uuid, c]));
+    const conditionMap = new Map();
+    condtionList.array.forEach(cond => {
+      conditionMap.set(cond.jia_isu_uuid, cond);
+    });
 
     const responseList: Array<GetIsuListResponse> = [];
     for (const isu of isuList) {

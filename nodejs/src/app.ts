@@ -365,9 +365,9 @@ app.get("/api/isu", async (req, res) => {
       [jiaUserId]
     );
     const conditionMap = new Map();
-    condtionList.array.forEach(cond => {
+    condtionList.forEach((cond: { jia_isu_uuid: any; }) => {
       conditionMap.set(cond.jia_isu_uuid, cond);
-    });
+    })
 
     const responseList: Array<GetIsuListResponse> = [];
     for (const isu of isuList) {

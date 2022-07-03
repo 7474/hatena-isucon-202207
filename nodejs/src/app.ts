@@ -357,7 +357,7 @@ app.get("/api/isu", async (req, res) => {
     await db.beginTransaction();
 
     const [isuList] = await db.query<Isu[]>(
-      "SELECT * FROM `isu` WHERE `jia_user_id` = ? ORDER BY `id` DESC",
+      "SELECT id, jia_isu_uuid, character, jia_user_id, created_at, updated_at FROM `isu` WHERE `jia_user_id` = ? ORDER BY `id` DESC",
       [jiaUserId]
     );
     const [condtionList] = await db.query<IsuCondition[]>(

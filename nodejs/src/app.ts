@@ -698,9 +698,13 @@ async function generateIsuGraphResponse(
   let timestampsInThisHour = [];
   let startTimeInThisHour = new Date(0);
 
+  const endTime = new Date(graphDate.getTime() + 24 * 3600 * 1000);
+
   const [rows] = await db.query<IsuCondition[]>(
-    "SELECT * FROM `isu_condition` WHERE `jia_isu_uuid` = ? ORDER BY `timestamp` ASC",
-    [jiaIsuUUID]
+    "SELECT * FROM `isu_condition` " +
+    "WHERE `jia_isu_uuid` = ? AND `timestamp` >= ? AND `timestamp` <= ? " + 
+    "ORDER BY `timestamp` ASC",
+    [jiaIsuUUID, graphDate, endTime]
   );
   for (const condition of rows) {
     const truncatedConditionTime = new Date(condition.timestamp);
@@ -739,7 +743,6 @@ async function generateIsuGraphResponse(
     });
   }
 
-  const endTime = new Date(graphDate.getTime() + 24 * 3600 * 1000);
   let startIndex = dataPoints.length;
   let endNextIndex = dataPoints.length;
   dataPoints.forEach((graph, i) => {

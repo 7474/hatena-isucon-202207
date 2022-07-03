@@ -13,8 +13,8 @@ CREATE TABLE `isu` (
   `created_at` DATETIME(6) DEFAULT CURRENT_TIMESTAMP(6),
   `updated_at` DATETIME(6) DEFAULT CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6),
    PRIMARY KEY(`id`),
-  INDEX `jia_user_id` (`jia_user_id`),
-  INDEX `jia_isu_uuid` (`jia_isu_uuid`)
+  INDEX `idx_jia_user_id` (`jia_user_id`),
+  INDEX `idx_jia_isu_uuid` (`jia_isu_uuid`)
 ) ENGINE=InnoDB DEFAULT CHARACTER SET=utf8mb4;
 
 CREATE TABLE `isu_condition` (
@@ -26,8 +26,7 @@ CREATE TABLE `isu_condition` (
   `message` VARCHAR(255) NOT NULL,
   `created_at` DATETIME(6) DEFAULT CURRENT_TIMESTAMP(6),
   PRIMARY KEY(`id`),
-  INDEX `jia_user_id` (`jia_user_id`),
-  INDEX `jia_isu_uuid` (`jia_isu_uuid`, `timestamp`)
+  INDEX `idx_jia_isu_uuid` (`jia_isu_uuid`, `timestamp`)
 ) ENGINE=InnoDB DEFAULT CHARACTER SET=utf8mb4;
 
 CREATE TABLE `user` (

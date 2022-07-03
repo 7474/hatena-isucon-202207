@@ -12,6 +12,9 @@ import multer, { MulterError } from "multer";
 import mysql, { RowDataPacket } from "mysql2/promise";
 import qs from "qs";
 
+import os from "os";
+import cluster from "cluster";
+
 interface Config extends RowDataPacket {
   name: string;
   url: string;
@@ -1262,4 +1265,19 @@ function isValidConditionFormat(condition: string): boolean {
   });
 });
 
-app.listen(parseInt(process.env["SERVER_APP_PORT"] ?? "3000", 10));
+
+const clusterWorkerSize = os.cpus().length
+if (cluster.isMaster) {
+  for (let i=0; i < clusterWorkerSize; i++) {
+    cluster.fork();
+  }
+
+  cluster.on("exit", function(worker) {
+    console.log("Worker", worker.id, " has exitted.");
+  })
+} else {
+  app.listen(parseInt(process.env["SERVER_APP_PORT"] ?? "3000", 10));
+  // app.listen(PORT, function () {
+  //   console.log(`Express server listening on port ${PORT} and worker ${process.pid}`)
+  // })
+}

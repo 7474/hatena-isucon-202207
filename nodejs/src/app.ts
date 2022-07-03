@@ -602,7 +602,8 @@ app.get(
       if (!row) {
         return res.status(404).type("text").send("not found: isu");
       }
-      res.setHeader('Cache-Control', 'public, max-age=604800');
+      // publicキャッシュはだめ
+      // res.setHeader('Cache-Control', 'public, max-age=604800');
       return res.status(200).send(row.image);
     } catch (err) {
       console.error(`db error: ${err}`);
